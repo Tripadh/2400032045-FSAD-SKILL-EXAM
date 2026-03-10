@@ -5,6 +5,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import java.util.Date;
+import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 /**
  * ClientDemo Class
@@ -29,55 +32,117 @@ public class ClientDemo {
 
     public static void main(String[] args) {
         ClientDemo demo = new ClientDemo();
+        Scanner scanner = new Scanner(System.in);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         
         printHeader("FSAD HIBERNATE SUPPLIER MANAGEMENT SYSTEM");
 
-        // I. Insert a new record into the database
-        printSection("OPERATION I: INSERT NEW SUPPLIER RECORDS");
-        int supplierId = demo.insertSupplier(
-                "ABC Suppliers",
-                "Premium quality raw materials supplier",
-                new Date(),
-                "Active",
-                "abc@suppliers.com",
-                "9876543210",
-                "123 Business Park, Hyderabad"
-        );
-        System.out.println("✓ Supplier inserted successfully with ID: " + supplierId);
+        try {
+            boolean running = true;
+            
+            while (running) {
+                printSection("MAIN MENU");
+                System.out.println("\n  1. View All Suppliers");
+                System.out.println("  2. Insert New Supplier");
+                System.out.println("  3. Update Supplier Name");
+                System.out.println("  4. Update Supplier Status");
+                System.out.println("  5. Exit");
+                System.out.print("\n  Enter your choice (1-5): ");
+                
+                String choice = scanner.nextLine();
+                
+                switch (choice) {
+                    case "1":
+                        // View All Suppliers
+                        printSection("ALL SUPPLIERS IN DATABASE");
+                        demo.displayAllSuppliers();
+                        break;
+                        
+                    case "2":
+                        // Insert New Supplier
+                        printSection("INSERT NEW SUPPLIER");
+                        System.out.println("\n🔹 Enter Supplier Details:");
+                        System.out.print("  Name: ");
+                        String name = scanner.nextLine();
+                        
+                        System.out.print("  Description: ");
+                        String description = scanner.nextLine();
+                        
+                        System.out.print("  Date (DD/MM/YYYY) [Press Enter for today's date]: ");
+                        String dateInput = scanner.nextLine();
+                        Date date = dateInput.trim().isEmpty() ? new Date() : dateFormat.parse(dateInput);
+                        
+                        System.out.print("  Status (Active/Pending/Inactive): ");
+                        String status = scanner.nextLine();
+                        
+                        System.out.print("  Email: ");
+                        String email = scanner.nextLine();
+                        
+                        System.out.print("  Phone: ");
+                        String phone = scanner.nextLine();
+                        
+                        System.out.print("  Address: ");
+                        String address = scanner.nextLine();
+                        
+                        int supplierId = demo.insertSupplier(name, description, date, status, email, phone, address);
+                        System.out.println("\n✓ Supplier inserted successfully with ID: " + supplierId);
+                        break;
+                        
+                    case "3":
+                        // Update Supplier Name
+                        printSection("UPDATE SUPPLIER NAME");
+                        System.out.print("\nEnter Supplier ID: ");
+                        int updateId1 = Integer.parseInt(scanner.nextLine());
+                        System.out.print("Enter New Name: ");
+                        String newName = scanner.nextLine();
+                        demo.updateSupplierName(updateId1, newName);
+                        System.out.println("\n✓ Supplier Name updated successfully!");
+                        break;
+                        
+                    case "4":
+                        // Update Supplier Status
+                        printSection("UPDATE SUPPLIER STATUS");
+                        System.out.print("\nEnter Supplier ID: ");
+                        int updateId2 = Integer.parseInt(scanner.nextLine());
+                        System.out.print("Enter New Status (Active/Pending/Inactive): ");
+                        String newStatus = scanner.nextLine();
+                        demo.updateSupplierStatus(updateId2, newStatus);
+                        System.out.println("\n✓ Supplier Status updated successfully!");
+                        break;
+                        
+                    case "5":
+                        // Exit
+                        System.out.println("\n✓ Exiting system...");
+                        running = false;
+                        break;
+                        
+                    default:
+                        System.out.println("\n✗ Invalid choice! Please enter 1-5.");
+                        break;
+                }
+                
+                if (running) {
+                    System.out.print("\nPress Enter to continue...");
+                    scanner.nextLine();
+                }
+            }
 
-        // Insert another record for demonstration
-        int supplierId2 = demo.insertSupplier(
-                "XYZ Industries",
-                "Industrial equipment supplier",
-                new Date(),
-                "Pending",
-                "xyz@industries.com",
-                "8765432109",
-                "456 Industrial Area, Vijayawada"
-        );
-        System.out.println("✓ Supplier inserted successfully with ID: " + supplierId2);
-
-        // II. Update fields (Name or Status) based on the ID
-        printSection("OPERATION II: UPDATE SUPPLIER RECORDS");
-        
-        // Update Name based on ID
-        System.out.println("\nUpdating Name for Supplier ID: " + supplierId);
-        demo.updateSupplierName(supplierId, "ABC Global Suppliers");
-        System.out.println("✓ Supplier Name updated successfully!");
-
-        // Update Status based on ID
-        System.out.println("\nUpdating Status for Supplier ID: " + supplierId2);
-        demo.updateSupplierStatus(supplierId2, "Active");
-        System.out.println("✓ Supplier Status updated successfully!");
-
-        // Display all suppliers after operations
-        printSection("ALL SUPPLIERS IN DATABASE");
-        demo.displayAllSuppliers();
-
-        // Close the SessionFactory
-        printSeparator();
-        closeSessionFactory();
-        printFooter();
+        } catch (ParseException e) {
+            System.err.println("Error parsing date. Please use DD/MM/YYYY format.");
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Please enter a valid number for ID.");
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            scanner.close();
+            // Close the SessionFactory
+            printSeparator();
+            closeSessionFactory();
+            printFooter();
+        }
     }
 
     private static void printHeader(String title) {
